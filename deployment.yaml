@@ -1,0 +1,32 @@
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: hellomk-deployment
+spec:
+  selector:
+    matchLabels:
+      app: hellominikube
+  replicas: 2 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: hellominikube
+    spec:
+      containers:
+      - name: hellomk
+        image: erikwegner/hellominikube:1
+        ports:
+        - name: app
+          containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: app
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: app
+          initialDelaySeconds: 1
+          periodSeconds: 1
