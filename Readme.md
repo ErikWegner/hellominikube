@@ -5,6 +5,8 @@ This repository contains a very simple http server [in python](server.py) packag
 
 The container is deployed to a local minikube for educational purposed.
 
+This version uses [nginx](https://kubernetes.github.io/ingress-nginx/) as ingress controller. For an alternative with traefik, see [this branch](https://github.com/ErikWegner/hellominikube/tree/traefik).
+
 Minikube deployment
 ------------------
 
@@ -14,4 +16,3 @@ Minikube deployment
 4. Create a service: `kubectl apply -f service.yaml`.
 5. Provide an ingress for the service: `kubectl apply -f ingress.yaml`.
 6. Connect to the minikube deployment, e. g. https://192.168.99.100/hellominikube/it-works/
-
