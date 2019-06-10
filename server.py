@@ -3,9 +3,16 @@ import argparse
 import logging
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-log = logging.getLogger(__name__)
+log = logging.getLogger()
+
 
 class Server(BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        log.debug(format, *args)
+
+    def log_error(self, format, *args):
+        log.error(format, *args)
+
     def _health(self):
         log.debug('health check')
         # Send response status code
@@ -33,7 +40,7 @@ class Server(BaseHTTPRequestHandler):
         message = "Request path: " + self.path
         log.info(message)
         # Write content as utf-8 data
-        self.wfile.write(bytes(message+ "\n", "utf8"))
+        self.wfile.write(bytes(message + "\n", "utf8"))
         return
 
     def do_GET(self):
@@ -42,7 +49,7 @@ class Server(BaseHTTPRequestHandler):
         return self._other()
 
 
-def run(server_class=HTTPServer, handler_class=BaseHTTPRequestHandler, port = 8000):
+def run(server_class=HTTPServer, handler_class=BaseHTTPRequestHandler, port=8000):
     log.info('Serving at port %s', port)
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
@@ -58,11 +65,11 @@ def parse_command_line(argv):
     parser.add_argument("-l", "--loglevel", dest="loglevel",
                         help="Set log level (DEBUG, INFO, WARNING, ERROR, CRITICAL")
     parser.add_argument("-p", "--port", dest="port",
-                        type=int, default = 8000,
+                        type=int, default=8000,
                         help="Set listening port")
-    
+
     arguments = parser.parse_args(argv[1:])
-    
+
     if arguments.loglevel:
         numeric_level = getattr(logging, arguments.loglevel.upper(), None)
         if not isinstance(numeric_level, int):
@@ -73,8 +80,7 @@ def parse_command_line(argv):
     return arguments
 
 
-
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     args = parse_command_line(sys.argv)
-    run(handler_class=Server, port = args.port)
+    run(handler_class=Server, port=args.port)
