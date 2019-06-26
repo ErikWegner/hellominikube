@@ -1,7 +1,7 @@
 import sys
 import argparse
 import logging
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 log = logging.getLogger()
 
@@ -37,22 +37,40 @@ class Server(BaseHTTPRequestHandler):
         self.end_headers()
 
         # Send message back to client
-        message = "Request path: " + self.path
+        message = f"{self.command} request at path: {self.path}"
         log.info(message)
+
         # Write content as utf-8 data
         self.wfile.write(bytes(message + "\n", "utf8"))
-        return
+
+        # Read body (if any)
+        if self.command in ['POST', 'PUT']:
+            content_len_str = self.headers.get('Content-Length')
+            if content_len_str:
+                content_len = int(content_len_str)
+                if content_len:
+                    body = self.rfile.read(content_len)
+                    self.rfile.close()
+                    log.info("Body:")
+                    log.info(body)
+
+        return True
 
     def do_GET(self):
         if self.path == "/health":
             return self._health()
         return self._other()
 
+    def do_POST(self):
+        return self._other()
+    
+    def do_PUT(self):
+        return self._other()
 
-def run(server_class=HTTPServer, handler_class=BaseHTTPRequestHandler, port=8000):
+def run(port=8000):
     log.info('Serving at port %s', port)
     server_address = ('', port)
-    httpd = server_class(server_address, handler_class)
+    httpd = ThreadingHTTPServer(server_address, Server)
     httpd.serve_forever()
 
 
@@ -83,4 +101,4 @@ def parse_command_line(argv):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     args = parse_command_line(sys.argv)
-    run(handler_class=Server, port=args.port)
+    run(port=args.port)
